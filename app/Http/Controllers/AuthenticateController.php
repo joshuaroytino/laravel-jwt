@@ -50,4 +50,23 @@ class AuthenticateController extends Controller
         // if no errors are encountered we can return a JWT
         return response()->json(compact('token'));
     }
+
+
+    public function getAuthenticatedUser()
+    {
+        try {
+            if(! $user = JWTAuth::parseToken()->authenticate()){
+                return response()->json(['user_not_found', 404]);
+            }
+        } catch (JWTException\TokenExpiredException $e){
+            return response()->json(['token_expired'], $e->getCode());
+        } catch (JWTException\TokenInvalidException $e){
+            return response()->json(['token_invalid'], $e->getCode());
+        } catch (JWTException\JWTException $e){
+            return response()->json(['token_absent'], $e->getCode());
+        }
+
+        // the token is valid and we have found the user via the sub claim
+        return response()->json(compact('user'));
+    }
 }
